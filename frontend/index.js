@@ -1,4 +1,11 @@
-import { backend } from 'declarations/backend';
+import { Actor, HttpAgent } from '@dfinity/agent';
+import { idlFactory } from './declarations/backend/backend.did.js';
+
+const agent = new HttpAgent();
+const backend = Actor.createActor(idlFactory, {
+  agent,
+  canisterId: process.env.BACKEND_CANISTER_ID,
+});
 
 document.addEventListener('DOMContentLoaded', async () => {
   const shoppingList = document.getElementById('shopping-list');
@@ -7,7 +14,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Function to render the shopping list
   async function renderShoppingList() {
-    const items = await backend.getItems();
+    const items = await backend.get_items();
     shoppingList.innerHTML = '';
     items.forEach(item => {
       const li = document.createElement('li');
@@ -31,7 +38,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     e.preventDefault();
     const text = newItemInput.value.trim();
     if (text) {
-      await backend.addItem(text);
+      await backend.add_item(text);
       newItemInput.value = '';
       await renderShoppingList();
     }
@@ -40,8 +47,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Toggle item completion
   shoppingList.addEventListener('click', async (e) => {
     if (e.target.closest('.toggle-btn')) {
-      const id = Number(e.target.closest('.toggle-btn').dataset.id);
-      await backend.toggleItem(id);
+      const id = BigInt(e.target.closest('.toggle-btn').dataset.id);
+      await backend.toggle_item(id);
       await renderShoppingList();
     }
   });
@@ -49,8 +56,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Delete item
   shoppingList.addEventListener('click', async (e) => {
     if (e.target.closest('.delete-btn')) {
-      const id = Number(e.target.closest('.delete-btn').dataset.id);
-      await backend.deleteItem(id);
+      const id = BigInt(e.target.closest('.delete-btn').dataset.id);
+      await backend.delete_item(id);
       await renderShoppingList();
     }
   });
